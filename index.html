@@ -1,0 +1,98 @@
+<html>
+<head>
+	<title>DSX ETH bid price</title>
+	<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+	<meta http-equiv="Pragma" content="no-cache">
+	<meta http-equiv="Expires" content="0">
+	<script type="text/javascript" src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+	<script>
+		var cmc_price = 0;
+
+		function get_dsx_price() {
+			$.ajax({
+				dataType: "json",
+				cache: false,
+				url: 'https://cors-proxy.htmldriven.com/?url=https://dsx.uk/mapi/depth/ethusd',
+				success: function(data) {
+					if (data.success) {
+						const volume_usd_total = 4000;
+						var i, bids = JSON.parse(data.body).ethusd.bids;
+						var volume_usd = 0;
+						var volume_eth = 0;
+						var price_fit = 0;
+
+						for (i = 0; i < bids.length; i++) {
+							var price = bids[i][0];
+							var volume = bids[i][1];
+							var volume_usd_local = price * volume;
+
+							if (volume_usd_local < 100) {
+								continue;
+							}
+
+							volume_usd += volume_usd_local;
+							volume_eth += volume;
+
+							if (volume_usd > volume_usd_total) {
+								price_fit = price;
+								break;
+							}
+						}
+
+						var diff = 15;
+						if (cmc_price && cmc_price - price_fit < diff) {
+							price_fit = cmc_price - diff;
+						}
+
+						if (price_fit) {
+							var price = Math.floor(price_fit);
+							$('#price').html('ETH/USD = ' + price);
+							$('#other').html('$' + volume_usd_total + ' = ' + (volume_usd_total / price) + ' ETH');
+						}
+					}
+				},
+				error: function() {
+					$('#price').html('Some error.');
+					$('#other').html('Refreshing the page...');
+					window.setTimeout(function() {
+						$('#price').html('Loading...');
+						$('#other').html('');
+						location.href = location.href;
+					}, 3000);
+				}
+			});
+		}
+
+		$(function() {
+			$.ajax({
+				dataType: "json",
+				cache: false,
+				timeout: 5000,
+				url: 'https://api.coinmarketcap.com/v2/ticker/1027/',
+				success: function(data) {
+					try {
+						if (data.data.symbol == 'ETH') {
+							cmc_price = Math.floor(data.data.quotes.USD.price);
+						}
+					} catch (e) {
+					}
+					get_dsx_price();
+				},
+				error: function() {
+					get_dsx_price();
+				}
+			});
+		});
+	</script>
+</head>
+<body>
+	<table height="100%" width="100%">
+	<tr>
+		<td style="text-align:center">
+			<h1 id="price">Loading...</h1>
+			<div id="other"></div>
+		</td>
+	</tr>
+	</table>
+</body>
+</html>
