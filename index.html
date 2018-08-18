@@ -15,7 +15,7 @@
 				url: 'https://crypto.fast-sales.ru/dsx.php',
 				success: function(data) {
 					if (data.success) {
-						const volume_usd_total = 4000;
+						const volume_usd_total = 5000;
 						var i, bids = JSON.parse(data.body).ethusd.bids;
 						var volume_usd = 0;
 						var volume_eth = 0;
@@ -47,7 +47,7 @@
 						if (price_fit) {
 							var price = Math.floor(price_fit);
 							$('#price').html('ETH/USD = ' + price);
-							$('#other').html('$' + volume_usd_total + ' = ' + (volume_usd_total / price) + ' ETH');
+							$('#other').html('$' + volume_usd_total + ' = ' + (volume_usd_total / price) + ' ETH<p>Send to: 0xa5d3f2d4898e221971c2c8cec827716d3fcdaeaa</p>');
 						}
 					}
 				},
